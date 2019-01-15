@@ -1,5 +1,5 @@
 # paperwallet
-Paper wallets to seed the Burner Wallet with private keys.
+Paper wallets to seed the [Burner Wallet](https://github.com/austintgriffith/burner-wallet) with private keys.
 
 # install
 ```javascript
