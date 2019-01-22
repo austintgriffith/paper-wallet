@@ -3,6 +3,8 @@ Paper wallets to seed the [Burner Wallet](https://github.com/austintgriffith/bur
 
 # install
 ```javascript
+git clone https://github.com/austintgriffith/paper-wallet
+cd paper-wallet
 npm i
 ```
 
