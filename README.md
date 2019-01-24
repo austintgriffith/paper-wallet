@@ -10,9 +10,6 @@ cd paper-wallet
 npm i
 ```
 
-![img_6324](https://user-images.githubusercontent.com/2653167/51704867-5ec66200-1fd7-11e9-97f3-6bf7b9e53d8d.jpeg)
-
-
 # run
 ```javascript
 node index.js
@@ -24,9 +21,7 @@ You could also just print out `private.svg` if you are in a pinch.
 
 If you would like me to generate you a special wallet design `cspaperwallet.jpg` hit me up on Twitter or Telegram @austingriffith
 
-
-![img_6328](https://user-images.githubusercontent.com/2653167/51704845-52420980-1fd7-11e9-80be-d7b4cfd7e353.jpeg)
-
+![walletsinfold](https://user-images.githubusercontent.com/2653167/51705218-3ab75080-1fd8-11e9-9495-66458938d9f9.jpg)
 
 # air dropping
 
@@ -44,3 +39,6 @@ node airdrop.js
 ```
 
 Use the CONFIG options like `justChecking`, `dryRun`, `testRun` for more control and testing.
+
+![walletcutting](https://user-images.githubusercontent.com/2653167/51705234-4440b880-1fd8-11e9-93ed-93338376cfdc.jpg)
+
