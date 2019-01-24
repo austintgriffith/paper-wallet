@@ -1,3 +1,4 @@
+.env
 addresses.txt
 node_modules
 generated*

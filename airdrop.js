@@ -6,19 +6,27 @@
 
 const Web3 = require('web3');
 const { BN, fromWei, toWei } = Web3.utils;
+require('dotenv').config();
+const ethereumjsutil = require("ethereumjs-util")
+const fs = require("fs")
 
 const CONFIG = {
+  justChecking: true, //True if you only want to check balances of all accounts
   dryRun: true, //Tells you what it would do without actually sending any txs
-  testRun: true, //Sends small dust amounts instead of the real airdrop amount
+  testRun: false, //Sends small dust amounts instead of the real airdrop amount
   provider: 'https://dai.poa.network',
   erc20ContractAddr: '0xDec31651Bec1fBbFF392aa7DE956d6EE4559498b', //Contract addr for the ERC20 token
   erc20Abi: require('./contracts/Burner.abi'),
-  sendingAccount: '0x425b550cc2a60b297fa4a50ca4840265ec67ada8',
   sendingPk: process.env.SENDING_PK,
+  sendingAccount: "0x"+ethereumjsutil.privateToAddress(process.env.SENDING_PK).toString('hex'),
   erc20SendGas: 75034,
   xDaiSendGas: 21000,
   gasPrice: toWei('1', 'gwei'),
 }
+
+//use this to debug CONFIG
+//console.log(CONFIG)
+//process.exit(1)
 
 const web3 = new Web3(new Web3.providers.HttpProvider(CONFIG.provider));
 let ERC20 = new web3.eth.Contract(CONFIG.erc20Abi, CONFIG.erc20ContractAddr);
@@ -27,18 +35,13 @@ const AMOUNT_OF_BURN_TO_SEND = CONFIG.testRun ? toWei('1', 'wei') : toWei('10', 
 const AMOUNT_OF_XDAI_TO_SEND = CONFIG.testRun ? toWei('1', 'wei') : toWei('0.01', 'ether')
 
 function main() {
-  let accounts = [
-    "0x425b550cc2a60b297fa4a50ca4840265ec67ada8"
-  ];
+  let accounts = fs.readFileSync("./addresses.txt").toString().trim().split("\n")
 
   checkBalances(accounts)
-  airDrop(accounts)
+  if(!CONFIG.justChecking) airDrop(accounts)
 }
 
 main()
-
-
-
 
 
 async function airDrop(accounts) {

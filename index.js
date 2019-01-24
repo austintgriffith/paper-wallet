@@ -35,7 +35,13 @@ if(COMPRESS){
 var private = qr.image(pkLink, { type: 'svg' });
 private.pipe(require('fs').createWriteStream('private.svg'));
 
+
 var publicAddress = result.address
+
+var public = qr.image(URL+"/"+publicAddress, { type: 'svg' });
+public.pipe(require('fs').createWriteStream('public.svg'));
+//console.log("public.svg"+URL+"/"+publicAddress)
+
 console.log(publicAddress)
 var fs = require('fs')
 fs.readFile("template.html", 'utf8', (err,data) => {
