@@ -8,7 +8,7 @@ const Web3 = require('web3');
 const { BN, fromWei, toWei } = Web3.utils;
 
 const CONFIG = {
-  dryRun: false, //Tells you what it would do without actually sending any txs
+  dryRun: true, //Tells you what it would do without actually sending any txs
   testRun: true, //Sends small dust amounts instead of the real airdrop amount
   provider: 'https://dai.poa.network',
   erc20ContractAddr: '0xDec31651Bec1fBbFF392aa7DE956d6EE4559498b', //Contract addr for the ERC20 token
@@ -45,6 +45,10 @@ async function airDrop(accounts) {
   if(CONFIG.sendingPk === undefined && CONFIG.dryRun === false) {
     console.log("Cannot airdrop without a PK. Please supply PK in env.SENDING_PK")
     process.exit(1)
+  }
+
+  if(CONFIG.testRun === true) {
+    console.log("WARNING: You are in testRun=true mode. Only dust will be sent to accounts")
   }
 
   let hasFunds = await senderHasFunds(accounts.length)
