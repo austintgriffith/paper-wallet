@@ -2,7 +2,7 @@ var Web3 = require('web3')
 var qr = require('qr-image')
 let base64url = require('base64url')
 
-const URL = "https://burnerwallet.io"
+const URL = "https://xdai.io"
 const COMPRESS = true
 const AUTOPRINT = false
 const MINEFOR = false//"feeddeadbeef"
@@ -18,8 +18,6 @@ if(MINEFOR){
   result = web3.eth.accounts.create();
 }
 
-
-
 let PK = result.privateKey
 let pkLink
 if(COMPRESS){
@@ -31,9 +29,9 @@ if(COMPRESS){
 }else{
   pkLink = URL+"/pk#"+PK.replace("0x","")
 }
-
-var private = qr.image(pkLink, { type: 'svg' });
-private.pipe(require('fs').createWriteStream('private.svg'));
+//console.log(pkLink)
+var private = qr.image(pkLink, { type: 'png' });
+private.pipe(require('fs').createWriteStream('private.png'));
 
 
 var publicAddress = result.address
@@ -44,11 +42,11 @@ public.pipe(require('fs').createWriteStream('public.svg'));
 
 console.log(publicAddress)
 var fs = require('fs')
-fs.readFile("template.html", 'utf8', (err,data) => {
+fs.readFile("templatethreepointfive.html", 'utf8', (err,data) => {
   if (err) {
     return console.log(err);
   }
-  var result = data.replace(/\*\*PUBLIC\*\*/g, publicAddress);
+  var result = data.replace(/\*\*PUBLIC\*\*/g, publicAddress.substring(0,8)+"......"+publicAddress.substring(publicAddress.length-7));
 
   fs.writeFile("generated.html", result, 'utf8', function (err) {
      if (err) return console.log(err);
@@ -57,24 +55,38 @@ fs.readFile("template.html", 'utf8', (err,data) => {
        if (err) throw err;
      });
 
-      /*var html = fs.readFileSync('./generated.html', 'utf8');
-      var conversion = require("phantom-html-to-pdf")();
-      console.log(html)
-      conversion({
-        html: html,
-        phantomPath: require("phantomjs-prebuilt").path,
-        settings: {
-             javascriptEnabled : true,
-             resourceTimeout: 10000
-         },
-      }, function(err, pdf) {
-      var output = fs.createWriteStream('./generated.pdf')
-      console.log(pdf.logs);
-      console.log(pdf.numberOfPages);
-        // since pdf.stream is a node.js stream you can use it
-        // to save the pdf to a file (like in this example) or to
-        // respond an http request.
-      pdf.stream.pipe(output);
-    });*/
+     var html = fs.readFileSync('./generated.html', 'utf8');
+     var conversion = require("phantom-html-to-pdf")();
+     console.log("Generating PDF...")
+     conversion({
+       html: html,
+       allowLocalFilesAccess: true,
+       phantomPath: require("phantomjs-prebuilt").path,
+       settings: {
+            javascriptEnabled : true,
+            resourceTimeout: 10000
+        },
+        paperSize: {
+            format: 'A4',
+            orientation: 'portrait',
+            margin: {
+                top: "0.33in",
+                left: "0in",
+                right:"0.19in"
+            }
+        }
+     }, function(err, pdf) {
+     var output = fs.createWriteStream('./generated.pdf')
+     //console.log(pdf.logs);
+     //console.log(pdf.numberOfPages);
+       // since pdf.stream is a node.js stream you can use it
+       // to save the pdf to a file (like in this example) or to
+       // respond an http request.
+     pdf.stream.pipe(output);
+     conversion.kill();
+     });
+
+
+
   });
 });

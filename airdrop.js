@@ -15,13 +15,13 @@ const CONFIG = {
   dryRun: true, //Tells you what it would do without actually sending any txs
   testRun: false, //Sends small dust amounts instead of the real airdrop amount
   provider: 'https://dai.poa.network',
-  erc20ContractAddr: '0xDec31651Bec1fBbFF392aa7DE956d6EE4559498b', //Contract addr for the ERC20 token
+  erc20ContractAddr: '0xa95d505e6933cb790ed3431805871efe4e6bbafd', //Contract addr for the ERC20 token
   erc20Abi: require('./contracts/Burner.abi'),
   sendingPk: process.env.SENDING_PK,
   sendingAccount: "0x"+ethereumjsutil.privateToAddress(process.env.SENDING_PK).toString('hex'),
   erc20SendGas: 75034,
   xDaiSendGas: 21000,
-  gasPrice: toWei('1', 'gwei'),
+  gasPrice: toWei('5', 'gwei'),
 }
 
 //use this to debug CONFIG
@@ -31,8 +31,8 @@ const CONFIG = {
 const web3 = new Web3(new Web3.providers.HttpProvider(CONFIG.provider));
 let ERC20 = new web3.eth.Contract(CONFIG.erc20Abi, CONFIG.erc20ContractAddr);
 
-const AMOUNT_OF_BURN_TO_SEND = CONFIG.testRun ? toWei('1', 'wei') : toWei('10', 'ether')
-const AMOUNT_OF_XDAI_TO_SEND = CONFIG.testRun ? toWei('1', 'wei') : toWei('0.01', 'ether')
+const AMOUNT_OF_BURN_TO_SEND = CONFIG.testRun ? toWei('1', 'wei') : toWei('9.09', 'ether')
+const AMOUNT_OF_XDAI_TO_SEND = CONFIG.testRun ? toWei('1', 'wei') : toWei('0.02', 'ether')
 
 function main() {
   let accounts = fs.readFileSync("./addresses.txt").toString().trim().split("\n")
@@ -69,11 +69,13 @@ async function airDrop(accounts) {
     for(let i = 0; i < accounts.length; i++) {
       console.log('AMOUNT_OF_BURN_TO_SEND: ', AMOUNT_OF_BURN_TO_SEND);
       console.log('AMOUNT_OF_XDAI_TO_SEND: ', AMOUNT_OF_XDAI_TO_SEND);
-
-      sendXDai(accounts[i], nonce++);
-      sendErc20(accounts[i], nonce++);
+      setTimeout(()=>{
+        sendXDai(accounts[i], nonce++);
+      },500)
+      setTimeout(()=>{
+        sendErc20(accounts[i], nonce++);
+      },750)
     }
-
   })
 }
 
