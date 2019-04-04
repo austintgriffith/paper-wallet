@@ -36,8 +36,11 @@ node batch.js
 ```
 This will generate a file called `wallets.pdf` and also `addresses.txt` for airdropping.
 
+![image](https://user-images.githubusercontent.com/2653167/55583840-18306a80-56e0-11e9-80ef-16d177b415fa.png)
+
 Finally... print, fold, cut, and glue your way to freedom!
 
+![paperwalletprinted](https://user-images.githubusercontent.com/2653167/55584775-48790880-56e2-11e9-93b6-4034c2b0ff5d.jpg)
 
 # air dropping
 
