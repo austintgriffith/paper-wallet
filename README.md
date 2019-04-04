@@ -42,3 +42,14 @@ Use the CONFIG options like `justChecking`, `dryRun`, `testRun` for more control
 
 ![walletcutting](https://user-images.githubusercontent.com/2653167/51705234-4440b880-1fd8-11e9-93ed-93338376cfdc.jpg)
 
+# batch generation
+
+If you want to make a large batch of wallets and merge them into a single pdf for ease of printing, there is a `batch.js`:
+
+First, get your template.html looking right.
+
+Then, edit `HOWMANY` in the `batch.js` and run it:
+```
+node batch.js
+```
+
