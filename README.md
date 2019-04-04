@@ -23,6 +23,22 @@ If you would like me to generate you a special wallet design `cspaperwallet.jpg`
 
 ![walletsinfold](https://user-images.githubusercontent.com/2653167/51705218-3ab75080-1fd8-11e9-9495-66458938d9f9.jpg)
 
+
+# batch generation
+
+If you want to make a large batch of wallets and merge them into a single pdf for ease of printing, there is a `batch.js`:
+
+First, get your `template.html` looking right.
+
+Then, edit `HOWMANY` in the `batch.js` and run it:
+```
+node batch.js
+```
+This will generate a file called `wallets.pdf` and also `addresses.txt` for airdropping.
+
+Finally... print, fold, cut, and glue your way to freedom!
+
+
 # air dropping
 
 You will need a distribution account. I would suggest using a mnemonic you can remember in the Burner Wallet and then copy the private key the wallet generates. 
@@ -41,4 +57,6 @@ node airdrop.js
 Use the CONFIG options like `justChecking`, `dryRun`, `testRun` for more control and testing.
 
 ![walletcutting](https://user-images.githubusercontent.com/2653167/51705234-4440b880-1fd8-11e9-93ed-93338376cfdc.jpg)
+
+
 
