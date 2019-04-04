@@ -4,7 +4,7 @@ const exec = util.promisify(require('child_process').exec);
 var merge = require('easy-pdf-merge');
 var fs = require('fs')
 
-const HOWMANY = 2
+const HOWMANY = 5
 
 
 
@@ -22,7 +22,7 @@ async function generate() {
     await exec('mv generated.pdf '+name+'.pdf');
     sources[count-1] = (""+name+".pdf")
   }
-  merge(sources,"out.pdf",function(err){
+  merge(sources,"wallets.pdf",function(err){
           if(err)
           return console.log(err);
           console.log('Success');
