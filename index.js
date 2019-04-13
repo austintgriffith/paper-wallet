@@ -2,11 +2,12 @@ var Web3 = require('web3')
 var qr = require('qr-image')
 let base64url = require('base64url')
 
-const URL = "https://xdai.io"
+const URL = "https://sundai.io"
 const COMPRESS = true
 const AUTOPRINT = false
 const MINEFOR = false//"feeddeadbeef"
-var web3 = new Web3()
+var web3 = new Web3(URL)
+const workDir = process.cwd();
 
 let result = ""
 if(MINEFOR){
@@ -46,7 +47,10 @@ fs.readFile("templatethreepointfive.html", 'utf8', (err,data) => {
   if (err) {
     return console.log(err);
   }
-  var result = data.replace(/\*\*PUBLIC\*\*/g, publicAddress.substring(0,8)+"......"+publicAddress.substring(publicAddress.length-7));
+  var result = data
+    .replace(/\*\*PUBLIC\*\*/g, publicAddress.substring(0,8)+"......"+publicAddress.substring(publicAddress.length-7))
+    .replace(/\*\*PATH\*\*/g, workDir);
+  //console.log(result);
 
   fs.writeFile("generated.html", result, 'utf8', function (err) {
      if (err) return console.log(err);
