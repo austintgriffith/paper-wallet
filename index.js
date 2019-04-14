@@ -6,6 +6,7 @@ const URL = "https://sundai.io"
 const COMPRESS = true
 const AUTOPRINT = false
 const MINEFOR = false//"feeddeadbeef"
+const DISPLAYPK = false;
 var web3 = new Web3(URL)
 const workDir = process.cwd();
 
@@ -20,6 +21,7 @@ if(MINEFOR){
 }
 
 let PK = result.privateKey
+if(DISPLAYPK) console.log(PK);
 let pkLink
 if(COMPRESS){
   function pkToUrl(pk) {
