@@ -22,6 +22,8 @@
     "easy-pdf-merge": "^0.2.1",
     "ethereumjs-util": "^6.0.0",
     "html-pdf": "^2.2.0",
+    "jsbi": "^2.0.5",
+    "leap-core": "^0.28.4",
     "phantom-html-to-pdf": "^0.5.6",
     "phantomjs-prebuilt": "^2.1.16",
     "qr-image": "^3.2.0",
