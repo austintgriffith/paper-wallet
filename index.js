@@ -48,7 +48,7 @@ fs.readFile("templatethreepointfive.html", 'utf8', (err,data) => {
     return console.log(err);
   }
   var result = data.replace(/\*\*PUBLIC\*\*/g, publicAddress.substring(0,8)+"......"+publicAddress.substring(publicAddress.length-7));
-  var result = data.replace(/\*\*PATH\*\*/g, path.resolve())
+  var result = result.replace(/\*\*PATH\*\*/g, path.resolve());
 
   fs.writeFile("generated.html", result, 'utf8', function (err) {
      if (err) return console.log(err);
