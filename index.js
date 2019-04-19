@@ -45,7 +45,7 @@ public.pipe(require('fs').createWriteStream('public.svg'));
 
 console.log(publicAddress)
 var fs = require('fs')
-fs.readFile("templatethreepointfive.html", 'utf8', (err,data) => {
+fs.readFile("templatesundai.html", 'utf8', (err,data) => {
   if (err) {
     return console.log(err);
   }
@@ -76,11 +76,11 @@ fs.readFile("templatethreepointfive.html", 'utf8', (err,data) => {
             format: 'A4',
             orientation: 'portrait',
             margin: {
-                top: "0.33in",
+                top: "0in",
                 left: "0in",
-                right:"0.19in"
-            }
-        }
+                right:"0in"
+            },
+        },
      }, function(err, pdf) {
      var output = fs.createWriteStream('./generated.pdf')
      //console.log(pdf.logs);
