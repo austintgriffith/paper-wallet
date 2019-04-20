@@ -86,60 +86,64 @@ function generateWallet(path = './wallets', batchName = '0') {
     return publicAddress;
 }
 
-function generateStickers(addresses, walletsDir, fileName = 'generated') {
+function generateStickers(addresses, walletsDir, fileName = 'generated', cb) {
     if (addresses.length > 15) {
         throw new Error("Max 15 stickers will fit on page");
     }
 
     let fs = require('fs');
-    fs.readFileSync("templatestickers.html", 'utf8', (err,data) => {
-        if (err) {
-            return console.log(err);
-        }
+    let data;
+    try {
+        data = fs.readFileSync("templatestickers.html", 'utf8');
+    } catch(e) {
+        console.log('Error:', e.stack);
+    }
+    
 
-        let result = data.replace(/\*\*PATH\*\*/g, walletsDir);
-        for (let i = 0; i < addresses.length; i++) {
-            result = result
-                .replace(new RegExp(`\\*\\*PUBLIC${i + 1}\\*\\*`, 'g'), addresses[i].substring(0,8)+"......"+addresses[i].substring(addresses[i].length-7))
-                .replace(new RegExp(`\\*\\*PRIV${i + 1}\\*\\*`, 'g'), addresses[i].substring(0,8)+"-priv");
-        }
-        //console.log(result);
+    let result = data.replace(/\*\*PATH\*\*/g, walletsDir);
+    for (let i = 0; i < addresses.length; i++) {
+        result = result
+            .replace(new RegExp(`\\*\\*PUBLIC${i + 1}\\*\\*`, 'g'), addresses[i].substring(0,8)+"......"+addresses[i].substring(addresses[i].length-7))
+            .replace(new RegExp(`\\*\\*PRIV${i + 1}\\*\\*`, 'g'), addresses[i].substring(0,8)+"-priv");
+    }
+    //console.log(result);
 
-        fs.writeFileSync("generated.html", result, 'utf8', function (err) {
-            if (err) return console.log(err)
-            let html = fs.readFileSync('./generated.html', 'utf8');
-            let conversion = require("phantom-html-to-pdf")();
-            console.log("Generating PDF...")
-            conversion({
-                html: html,
-                allowLocalFilesAccess: true,
-                phantomPath: require("phantomjs-prebuilt").path,
-                settings: {
-                        javascriptEnabled : true,
-                        resourceTimeout: 10000
-                    },
-                    paperSize: {
-                        format: 'A4',
-                        orientation: 'portrait',
-                        margin: {
-                            top: "0in",
-                            left: "0in",
-                            right:"0in"
-                        },
-                    },
-            }, function(err, pdf) {
-            if (err) return console.log(err);
-            let output = fs.createWriteStream(`${walletsDir}/${fileName}.pdf`);
-            //console.log(pdf.logs);
-            //console.log(pdf.numberOfPages);
-            // since pdf.stream is a node.js stream you can use it
-            // to save the pdf to a file (like in this example) or to
-            // respond an http request.
-            pdf.stream.pipe(output);
-            conversion.kill();
-            output.close();
-            });
-        });
+    try {
+        fs.writeFileSync("generated.html", result, 'utf8');    
+    }  catch(e) {
+        console.log('Error:', e.stack);
+    }
+    let html = fs.readFileSync('./generated.html', 'utf8');
+    let conversion = require("phantom-html-to-pdf")();
+    console.log("Generating PDF...")
+    conversion({
+        html: html,
+        allowLocalFilesAccess: true,
+        phantomPath: require("phantomjs-prebuilt").path,
+        settings: {
+                javascriptEnabled : true,
+                resourceTimeout: 10000
+            },
+            paperSize: {
+                format: 'A4',
+                orientation: 'portrait',
+                margin: {
+                    top: "0in",
+                    left: "0in",
+                    right:"0in"
+                },
+            },
+    }, function(err, pdf) {
+        if (err) return console.log(err);
+        let output = fs.createWriteStream(`${walletsDir}/${fileName}.pdf`);
+        //console.log(pdf.logs);
+        //console.log(pdf.numberOfPages);
+        // since pdf.stream is a node.js stream you can use it
+        // to save the pdf to a file (like in this example) or to
+        // respond an http request.
+        pdf.stream.pipe(output);
+        conversion.kill();
+        cb();
     });
 }
 

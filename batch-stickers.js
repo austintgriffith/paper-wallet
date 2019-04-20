@@ -1,6 +1,7 @@
 const { generateWallet, generateStickers } = require('./helpers');
 const util = require('util');
 const exec = util.promisify(require('child_process').exec);
+const asyncStickers = util.promisify(generateStickers);
 var merge = require('easy-pdf-merge');
 var fs = require('fs');
 
@@ -9,7 +10,7 @@ const PATH = 'wallets';
 const BATCH = '0';
 const workDir = process.cwd();
 
-function generate() {
+async function generate() {
     let accounts = [];
     let sources = [];
     const pages = Math.ceil(HOWMANY / 15);
@@ -26,10 +27,14 @@ function generate() {
         console.log('--------------');
         console.log(pageAccounts);
         name = `Batch-${BATCH}_${pageAccounts[0].substring(0,8)}`;
-        generateStickers(pageAccounts, workDir + '/' + PATH, name);
+        await asyncStickers(pageAccounts, workDir + '/' + PATH, name);
         console.log("Generated: " + name);
         //await exec('mv ' + workDir + '/generated.pdf '+ workDir + '/' + PATH + '/' + name + '.pdf');
         sources[i] = (""+PATH+"/"+name+".pdf");
+    }
+
+    while(!fs.existsSync(sources[pages-1])) {
+        //console.log('.');
     }
 
     merge(sources,PATH + "/wallets-" + BATCH + ".pdf",function(err){
