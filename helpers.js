@@ -72,7 +72,7 @@ function generateWallet(path = './wallets', batchName = '0') {
 
 
     var public = qr.image(URL+"/"+publicAddress, { type: 'svg' });
-    public.pipe(require('fs').createWriteStream(`${path}/${publicAddress.substring(0,8)}.png`));
+    public.pipe(require('fs').createWriteStream(`${path}/${publicAddress.substring(0,8)}.svg`));
     //console.log("public.svg"+URL+"/"+publicAddress)
 
     console.log(publicAddress);
