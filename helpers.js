@@ -107,6 +107,14 @@ function generateStickers(addresses, walletsDir, fileName = 'generated', cb) {
             .replace(new RegExp(`\\*\\*PRIV${i + 1}\\*\\*`, 'g'), addresses[i].substring(0,8)+"-priv");
     }
     //console.log(result);
+    //comment unused divs:
+    if (addresses.length < 15) {
+        result = result.replace(new RegExp(`\\*\\*${addresses.length + 1}\\*\\*-->`, 'g'), addresses.length + 1);
+        for(let i = addresses.length + 2; i <= 15; i++){
+            result = result.replace(new RegExp(`<!--\\*\\*${i}\\*\\*-->`, 'g'), i);
+        }
+        result = result.replace(new RegExp('<!---->', 'g'), '-->');
+    }
 
     try {
         fs.writeFileSync("generated.html", result, 'utf8');    
