@@ -9,11 +9,12 @@ const HOWMANY = 35;
 const PATH = 'wallets';
 const BATCH = '0';
 const workDir = process.cwd();
+const perPage = 10;
 
 async function generate() {
     let accounts = [];
     let sources = [];
-    const pages = Math.ceil(HOWMANY / 15);
+    const pages = Math.ceil(HOWMANY / perPage);
 
     for (let i = 0; i < HOWMANY; i++) {
         accounts.push(generateWallet());
@@ -23,11 +24,11 @@ async function generate() {
     console.log('--------------');
     console.log(accounts);
     for (let i = 0; i < pages; i++) {
-        pageAccounts = accounts.slice(i * 15, (i + 1) * 15);
+        pageAccounts = accounts.slice(i * perPage, (i + 1) * perPage);
         console.log('--------------');
         console.log(pageAccounts);
         name = `Batch-${BATCH}_${pageAccounts[0].substring(0,8)}`;
-        await asyncStickers(pageAccounts, workDir + '/' + PATH, name);
+        await asyncStickers(pageAccounts, workDir + '/' + PATH, name, perPage);
         console.log("Generated: " + name);
         //await exec('mv ' + workDir + '/generated.pdf '+ workDir + '/' + PATH + '/' + name + '.pdf');
         sources[i] = (""+PATH+"/"+name+".pdf");

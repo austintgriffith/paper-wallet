@@ -86,15 +86,15 @@ function generateWallet(path = './wallets', batchName = '0') {
     return publicAddress;
 }
 
-function generateStickers(addresses, walletsDir, fileName = 'generated', cb) {
-    if (addresses.length > 15) {
-        throw new Error("Max 15 stickers will fit on page");
+function generateStickers(addresses, walletsDir, fileName = 'generated', perPage=15, cb) {
+    if (addresses.length > perPage) {
+        throw new Error(`Max ${perPage} stickers will fit on page`);
     }
 
     let fs = require('fs');
     let data;
     try {
-        data = fs.readFileSync("templatestickers.html", 'utf8');
+        data = fs.readFileSync(`templatestickers${perPage}.html`, 'utf8');
     } catch(e) {
         console.log('Error:', e.stack);
     }
@@ -108,9 +108,9 @@ function generateStickers(addresses, walletsDir, fileName = 'generated', cb) {
     }
     //console.log(result);
     //comment unused divs:
-    if (addresses.length < 15) {
+    if (addresses.length < perPage) {
         result = result.replace(new RegExp(`\\*\\*${addresses.length + 1}\\*\\*-->`, 'g'), addresses.length + 1);
-        for(let i = addresses.length + 2; i <= 15; i++){
+        for(let i = addresses.length + 2; i <= perPage; i++){
             result = result.replace(new RegExp(`<!--\\*\\*${i}\\*\\*-->`, 'g'), i);
         }
         result = result.replace(new RegExp('<!---->', 'g'), '-->');
