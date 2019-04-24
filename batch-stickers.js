@@ -5,11 +5,11 @@ const asyncStickers = util.promisify(generateStickers);
 var merge = require('easy-pdf-merge');
 var fs = require('fs');
 
-const HOWMANY = 35;
+const HOWMANY = 100;
 const PATH = 'wallets';
-const BATCH = '0';
+const BATCH = 'extra';
 const workDir = process.cwd();
-const perPage = 10;
+const perPage = 12;
 
 async function generate() {
     let accounts = [];
