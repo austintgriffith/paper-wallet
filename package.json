@@ -18,6 +18,7 @@
   "description": "",
   "dependencies": {
     "base64url": "^3.0.1",
+    "csv-parser": "^2.2.0",
     "dotenv": "^6.2.0",
     "easy-pdf-merge": "^0.2.1",
     "ethereumjs-util": "^6.0.0",

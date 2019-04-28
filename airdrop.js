@@ -4,18 +4,19 @@ require('dotenv').config();
 const ethereumjsutil = require("ethereumjs-util");
 const ethers = require('ethers');
 const fs = require("fs");
-const { sendFunds, getBalance } = require ('./helpers');
+const { sendFunds, getBalance, sleep } = require ('./helpers');
 
 const CONFIG = {
-  dryRun: true, //Tells you what it would do without actually sending any txs
-  provider: 'https://testnet-node.leapdao.org',
+  dryRun: false, //Tells you what it would do without actually sending any txs
+  provider: 'https://mainnet-node.leapdao.org',
   dispenser: { 
     priv: process.env.SENDING_PK,
     address: "0x"+ethereumjsutil.privateToAddress(process.env.SENDING_PK).toString('hex') 
   },
-  tokenColor: 1,
-  amountToSend: '1000000000000000000',
+  tokenColor: 2,
+  amountToSend: '11000000000000000000'
 };
+const folder = 'wallets-conf';
 
 
 
@@ -26,9 +27,11 @@ const CONFIG = {
 const rpc = new ethers.providers.JsonRpcProvider(CONFIG.provider);
 
 async function main() {
-  let accounts = fs.readFileSync("./addresses.txt").toString().trim().split("\n");
+  let accounts = fs.readFileSync(`./${folder}/addresses-0.txt`).toString().trim().split("\n");
   const totalToSend = String(JSBI.multiply(JSBI.BigInt(CONFIG.amountToSend), JSBI.BigInt(accounts.length)));
   let balance;
+  let txHash;
+  let txReceipt;
 
   balance = await getBalance(CONFIG.dispenser.address, CONFIG.tokenColor, rpc);
   console.log(totalToSend, 'tokens will be sent to', accounts.length, 'addresses');
@@ -37,21 +40,26 @@ async function main() {
   if (CONFIG.dryRun) console.log('Dry run mode is enabled! No tokens will be dispensed!');
   if(JSBI.LT(balance, JSBI.BigInt(totalToSend))) {
     if(!CONFIG.dryRun) {
-      throw new Error('Not enough funds in dispenser!');
+      //throw new Error('Not enough funds in dispenser!');
     } else {
       console.log('Not enough funds in dispenser!');
     }
   }
   
   for(let i = 0; i < accounts.length; i++) {
-    console.log('Dispensng', CONFIG.amountToSend, 'tokens to', accounts[i]);
+    console.log(i, 'Dispensng', CONFIG.amountToSend, 'tokens to', accounts[i]);
     balance = await getBalance(accounts[i], CONFIG.tokenColor, rpc);
     if (String(balance) !== '0') {
         console.log('   Address already funded(', String(balance), '). Skipping.');
         continue;
     }
     if (!CONFIG.dryRun) {
-      await sendFunds(CONFIG.dispenser, accounts[i], CONFIG.amountToSend, CONFIG.tokenColor, rpc);
+      txHash = await sendFunds(CONFIG.dispenser, accounts[i], CONFIG.amountToSend, CONFIG.tokenColor, rpc);
+      for(let i = 0; i <= 5; i++) {
+        await sleep(1000);
+        txReceipt = await rpc.send("eth_getTransactionReceipt", [txHash]);   
+        if(txReceipt) break;
+      }   
       balance = await getBalance(accounts[i], CONFIG.tokenColor, rpc);
       if (String(balance) === CONFIG.amountToSend) {
           console.log('   Done');

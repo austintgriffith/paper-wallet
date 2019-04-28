@@ -4,6 +4,12 @@ const Web3 = require('web3');
 const qr = require('qr-image');
 const base64url = require('base64url');
 
+function sleep(ms){
+    return new Promise(resolve => {
+        setTimeout(resolve,ms);
+    })
+}
+
 async function getBalance(address, color, rpc) {
     const response = await rpc.send('plasma_unspent', [address]);
     const balance = response.reduce((sum, unspent) => { 
@@ -32,6 +38,8 @@ async function sendFunds(from, to, amount, color, rpc) {
     // eslint-disable-next-line no-console
     const txHash = await rpc.send("eth_sendRawTransaction", [tx.hex()]);
     console.log('txHash:', txHash);
+
+    return txHash;
 }
 
 function generateWallet(path = './wallets', batchName = '0') {
@@ -155,4 +163,4 @@ function generateStickers(addresses, walletsDir, fileName = 'generated', perPage
     });
 }
 
-module.exports = { getBalance, sendFunds, generateWallet, generateStickers }
+module.exports = { getBalance, sendFunds, generateWallet, generateStickers, sleep }
