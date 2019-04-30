@@ -17,7 +17,7 @@ const CONFIG = {
   amountToSend: '11000000000000000000'
 };
 const folder = 'wallets-conf';
-
+const batch = '0';
 
 
 //use this to debug CONFIG
@@ -27,7 +27,7 @@ const folder = 'wallets-conf';
 const rpc = new ethers.providers.JsonRpcProvider(CONFIG.provider);
 
 async function main() {
-  let accounts = fs.readFileSync(`./${folder}/addresses-0.txt`).toString().trim().split("\n");
+  let accounts = fs.readFileSync(`./${folder}/addresses-${batch}.txt`).toString().trim().split("\n");
   const totalToSend = String(JSBI.multiply(JSBI.BigInt(CONFIG.amountToSend), JSBI.BigInt(accounts.length)));
   let balance;
   let txHash;
