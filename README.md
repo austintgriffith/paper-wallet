@@ -1,7 +1,7 @@
 # paperwallet
 Paper wallets to seed the [Burner Wallet](https://github.com/leapdao/burner-wallet) with private keys.
 
-![paperwallets](https://user-images.githubusercontent.com/2653167/51704894-6c7be780-1fd7-11e9-8bf9-09d9a55f6943.jpg)
+![paperwallets](https://user-images.githubusercontent.com/659301/57143331-eda8fe80-6dbe-11e9-8218-5b0223f31bd6.jpg)
 
 # install
 ```javascript
