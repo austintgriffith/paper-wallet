@@ -47,7 +47,7 @@ async function main() {
   }
   
   for(let i = 0; i < accounts.length; i++) {
-    console.log(i, 'Dispensng', CONFIG.amountToSend, 'tokens to', accounts[i]);
+    console.log(i, 'Dispensing', CONFIG.amountToSend, 'tokens to', accounts[i]);
     balance = await getBalance(accounts[i], CONFIG.tokenColor, rpc);
     if (String(balance) !== '0') {
         console.log('   Address already funded(', String(balance), '). Skipping.');

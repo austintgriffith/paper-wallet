@@ -1,5 +1,5 @@
 # paperwallet
-Paper wallets to seed the [Burner Wallet](https://github.com/austintgriffith/burner-wallet) with private keys.
+Paper wallets to seed the [Burner Wallet](https://github.com/leapdao/burner-wallet) with private keys.
 
 ![paperwallets](https://user-images.githubusercontent.com/2653167/51704894-6c7be780-1fd7-11e9-8bf9-09d9a55f6943.jpg)
 
