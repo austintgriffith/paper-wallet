@@ -31,7 +31,7 @@ const web3 = new Web3(new Web3.providers.HttpProvider(CONFIG.provider));
 let ERC20 = new web3.eth.Contract(CONFIG.erc20Abi, CONFIG.erc20ContractAddr);
 
 const AMOUNT_OF_BURN_TO_SEND = CONFIG.testRun ? toWei('1', 'wei') : toWei('1', 'ether')
-const AMOUNT_OF_XDAI_TO_SEND = CONFIG.testRun ? toWei('1', 'wei') : toWei('0.02', 'ether')
+const AMOUNT_OF_XDAI_TO_SEND = CONFIG.testRun ? toWei('1', 'wei') : toWei('0.10', 'ether')
 
 //Batch related settings
 const TXS_PER_BATCH = 6
@@ -144,7 +144,7 @@ function checkErc20Balance(account) {
   return ERC20.methods.balanceOf(account).call();
 }
 
-function sendXDai(to, nonce) {
+async function sendXDai(to, nonce) {
   let tx = {
     to: to,
     value: AMOUNT_OF_XDAI_TO_SEND,
@@ -154,9 +154,8 @@ function sendXDai(to, nonce) {
   }
 
   if(CONFIG.dryRun === false) {
-    web3.eth.accounts.signTransaction(tx, CONFIG.sendingPk).then(signed => {
-        web3.eth.sendSignedTransaction(signed.rawTransaction).on('receipt', console.log);
-    });
+    let signed = await web3.eth.accounts.signTransaction(tx, CONFIG.sendingPk)
+    return web3.eth.sendSignedTransaction(signed.rawTransaction)
   } else {
     console.log("Dry run enabled. Would have sent tx: ", tx)
   }
