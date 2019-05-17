@@ -3,7 +3,6 @@
 // Use at your own risk and start with small verifying txs.
 //TODO: Make this all better and incorporate clevis
 
-
 const Web3 = require('web3');
 const { BN, fromWei, toWei } = Web3.utils;
 require('dotenv').config();
@@ -11,11 +10,11 @@ const ethereumjsutil = require("ethereumjs-util")
 const fs = require("fs")
 
 const CONFIG = {
-  justChecking: true, //True if you only want to check balances of all accounts
-  dryRun: true, //Tells you what it would do without actually sending any txs
-  testRun: false, //Sends small dust amounts instead of the real airdrop amount
+  justChecking: false, //True if you only want to check balances of all accounts
+  dryRun: false, //Tells you what it would do without actually sending any txs
+  testRun: true, //Sends small dust amounts instead of the real airdrop amount
   provider: 'https://dai.poa.network',
-  erc20ContractAddr: '0xa95d505e6933cb790ed3431805871efe4e6bbafd', //Contract addr for the ERC20 token
+  erc20ContractAddr: '0x0D9Ab7eD8A4905E319De8fFa9eA5225f9F25BF0A', //Contract addr for the ERC20 token
   erc20Abi: require('./contracts/Burner.abi'),
   sendingPk: process.env.SENDING_PK,
   sendingAccount: "0x"+ethereumjsutil.privateToAddress(process.env.SENDING_PK).toString('hex'),
@@ -25,14 +24,18 @@ const CONFIG = {
 }
 
 //use this to debug CONFIG
-//console.log(CONFIG)
-//process.exit(1)
+// console.log(CONFIG)
+// process.exit(1)
 
 const web3 = new Web3(new Web3.providers.HttpProvider(CONFIG.provider));
 let ERC20 = new web3.eth.Contract(CONFIG.erc20Abi, CONFIG.erc20ContractAddr);
 
-const AMOUNT_OF_BURN_TO_SEND = CONFIG.testRun ? toWei('1', 'wei') : toWei('9.09', 'ether')
-const AMOUNT_OF_XDAI_TO_SEND = CONFIG.testRun ? toWei('1', 'wei') : toWei('0.02', 'ether')
+const AMOUNT_OF_BURN_TO_SEND = CONFIG.testRun ? toWei('1', 'wei') : toWei('1', 'ether')
+const AMOUNT_OF_XDAI_TO_SEND = CONFIG.testRun ? toWei('1', 'wei') : toWei('0.10', 'ether')
+
+//Batch related settings
+const TXS_PER_BATCH = 6
+const SLEEP_TIME = 5000
 
 function main() {
   let accounts = fs.readFileSync("./addresses.txt").toString().trim().split("\n")
@@ -42,7 +45,6 @@ function main() {
 }
 
 main()
-
 
 async function airDrop(accounts) {
   if(CONFIG.sendingPk === undefined && CONFIG.dryRun === false) {
@@ -63,20 +65,42 @@ async function airDrop(accounts) {
 
   console.log(`Airdropping ${accounts.length} accounts`)
 
-  web3.eth.getTransactionCount(CONFIG.sendingAccount).then(nonce => {
+  web3.eth.getTransactionCount(CONFIG.sendingAccount).then(async function(nonce) {
     console.log('Nonce: ', nonce);
 
+    let batch = []
     for(let i = 0; i < accounts.length; i++) {
       console.log('AMOUNT_OF_BURN_TO_SEND: ', AMOUNT_OF_BURN_TO_SEND);
       console.log('AMOUNT_OF_XDAI_TO_SEND: ', AMOUNT_OF_XDAI_TO_SEND);
-      setTimeout(()=>{
-        sendXDai(accounts[i], nonce++);
-      },500)
-      setTimeout(()=>{
-        sendErc20(accounts[i], nonce++);
-      },750)
+
+      let tx = sendErc20(accounts[i], nonce++)
+      batch = await addToBatch(batch, tx)
+
+      tx = sendXDai(accounts[i], nonce++)
+      batch = await addToBatch(batch, tx)
     }
+
+    await clearBatch(batch)
   })
+}
+
+async function addToBatch(batch, promise) {
+  batch.push(promise)
+
+  if(batch.length === TXS_PER_BATCH) {
+    await clearBatch(batch)
+    batch = []
+  }
+
+  return batch
+}
+
+async function clearBatch(batch) {
+  console.log("About to wait for batch: ", batch);
+  await Promise.all(batch);
+  console.log("Batch finished")
+  console.log("Sleeping")
+  await sleep(SLEEP_TIME)
 }
 
 function expectedGasCosts() {
@@ -90,13 +114,13 @@ async function senderHasFunds(numAccounts) {
   console.log('requiredXDai: ', requiredXDai);
   console.log('requiredBurn: ', requiredBurn);
 
-    let erc20Balance = await checkErc20Balance(CONFIG.sendingAccount);
-    let balance = await web3.eth.getBalance(CONFIG.sendingAccount)
+  let erc20Balance = await checkErc20Balance(CONFIG.sendingAccount);
+  let balance = await web3.eth.getBalance(CONFIG.sendingAccount)
 
-    console.log('erc20Balance: ', erc20Balance);
-    console.log('balance: ', balance);
+  console.log('erc20Balance: ', erc20Balance);
+  console.log('balance: ', balance);
 
-    return (balance >= requiredXDai && erc20Balance >= requiredBurn);
+  return (balance >= requiredXDai && erc20Balance >= requiredBurn);
 }
 
 async function checkBalances(accounts) {
@@ -120,7 +144,7 @@ function checkErc20Balance(account) {
   return ERC20.methods.balanceOf(account).call();
 }
 
-function sendXDai(to, nonce) {
+async function sendXDai(to, nonce) {
   let tx = {
     to: to,
     value: AMOUNT_OF_XDAI_TO_SEND,
@@ -130,15 +154,14 @@ function sendXDai(to, nonce) {
   }
 
   if(CONFIG.dryRun === false) {
-    web3.eth.accounts.signTransaction(tx, CONFIG.sendingPk).then(signed => {
-        web3.eth.sendSignedTransaction(signed.rawTransaction).on('receipt', console.log);
-    });
+    let signed = await web3.eth.accounts.signTransaction(tx, CONFIG.sendingPk)
+    return web3.eth.sendSignedTransaction(signed.rawTransaction)
   } else {
     console.log("Dry run enabled. Would have sent tx: ", tx)
   }
 }
 
-function sendErc20(to, nonce) {
+async function sendErc20(to, nonce) {
   let data = ERC20.methods.transfer(to, AMOUNT_OF_BURN_TO_SEND).encodeABI()
 
   let tx = {
@@ -150,10 +173,13 @@ function sendErc20(to, nonce) {
   }
 
   if(CONFIG.dryRun === false) {
-    web3.eth.accounts.signTransaction(tx, CONFIG.sendingPk).then(signed => {
-        web3.eth.sendSignedTransaction(signed.rawTransaction).on('receipt', console.log);
-    });
+    let signed = await web3.eth.accounts.signTransaction(tx, CONFIG.sendingPk)
+    return web3.eth.sendSignedTransaction(signed.rawTransaction)
   } else {
     console.log("Dry run enabled. Would have sent tx: ", tx)
   }
+}
+
+function sleep(millis) {
+  return new Promise(resolve => setTimeout(resolve, millis));
 }
