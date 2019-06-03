@@ -42,11 +42,13 @@ public.pipe(require('fs').createWriteStream('public.svg'));
 
 console.log(publicAddress)
 var fs = require('fs')
+const path = require("path");
 fs.readFile("templatethreepointfive.html", 'utf8', (err,data) => {
   if (err) {
     return console.log(err);
   }
   var result = data.replace(/\*\*PUBLIC\*\*/g, publicAddress.substring(0,8)+"......"+publicAddress.substring(publicAddress.length-7));
+  var result = result.replace(/\*\*PATH\*\*/g, path.resolve());
 
   fs.writeFile("generated.html", result, 'utf8', function (err) {
      if (err) return console.log(err);
