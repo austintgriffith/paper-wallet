@@ -4,7 +4,7 @@ const exec = util.promisify(require('child_process').exec);
 var merge = require('easy-pdf-merge');
 var fs = require('fs')
 
-const HOWMANY = 5
+const HOWMANY = 3
 
 
 
@@ -29,7 +29,11 @@ async function generate() {
           var i = sources.length;
           sources.forEach(function(filepath){
             console.log("Cleaning up "+filepath)
-            fs.unlinkSync(filepath);
+            try{
+              if(fs.existsSync(filepath)){
+                fs.unlinkSync(filepath);
+              }
+            }catch(e){console.log(e)}
           });
   });
 

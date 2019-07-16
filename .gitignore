@@ -1,3 +1,5 @@
+accounts.json
+flex_sos_accounts.json
 *.pdf
 private.png
 .env
