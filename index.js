@@ -1,93 +1,37 @@
-var Web3 = require('web3')
-var qr = require('qr-image')
-let base64url = require('base64url')
-let fs = require("fs")
-const URL = "https://daog.io"
-const COMPRESS = true
-const AUTOPRINT = false
-const MINEFOR = false//"feeddeadbeef"
-var web3 = new Web3()
+const util = require('util');
+const exec = util.promisify(require('child_process').exec);
+var merge = require('easy-pdf-merge');
+var fs = require('fs')
+let sources = []
 
-let accounts = JSON.parse(fs.readFileSync("./accounts.json").toString())
-
-let account
-for(let a in accounts){
-  account = accounts[a]
-
+async function generate(accounts){
+  let account
+  for(let a in accounts){
+    account = accounts[a]
+    const { stdout, stderr } = await exec('node create.js '+account.address+" "+account.pk);
+    if (stderr) {
+      console.error(`error: ${stderr}`);
+    }
+    let name = account.address
+    console.log("Generated: "+name);
+    await exec('mv generated.pdf '+name+'.pdf');
+    sources[a] = (""+name+".pdf")
+  }
+  merge(sources,"wallets.pdf",function(err){
+          if(err)
+          return console.log(err);
+          console.log('Success');
+          var i = sources.length;
+          sources.forEach(function(filepath){
+            console.log("Cleaning up "+filepath)
+            try{
+              if(fs.existsSync(filepath)){
+                fs.unlinkSync(filepath);
+              }
+            }catch(e){console.log(e)}
+          });
+  });
 }
 
-//console.log(account)
-
-  let PK = account.pk
-  let pkLink
-  if(COMPRESS){
-    function pkToUrl(pk) {
-      return base64url(web3.utils.hexToBytes(pk))
-    }
-    let encoded = pkToUrl(PK)
-    pkLink = URL+"/pk#"+encoded
-  }else{
-    pkLink = URL+"/pk#"+PK.replace("0x","")
-  }
-  //console.log(pkLink)
-  var private = qr.image(pkLink, { type: 'png' });
-  private.pipe(require('fs').createWriteStream('private.png'));
-
-  var publicAddress = account.address
-
-  var public = qr.image(URL+"/"+publicAddress, { type: 'svg' });
-  public.pipe(require('fs').createWriteStream('public.svg'));
-  //console.log("public.svg"+URL+"/"+publicAddress)
-
-  console.log(publicAddress)
-
-  fs.readFile("template.html", 'utf8', (err,data) => {
-    if (err) {
-      return console.log(err);
-    }
-    var result = data.replace(/\*\*PUBLIC\*\*/g, publicAddress.substring(0,9)+"......"+publicAddress.substring(publicAddress.length-8));
-
-    result = result.replace(/"\.\//g, "\"file://"+__dirname+"/");
-
-    fs.writeFile("generated.html", result, 'utf8', function (err) {
-       if (err) return console.log(err);
-
-       fs.appendFile('addresses.txt',publicAddress+"\n", function (err) {
-         if (err) throw err;
-       });
-
-       var html = fs.readFileSync('./generated.html', 'utf8');
-       var conversion = require("phantom-html-to-pdf")();
-       console.log("Generating PDF...")
-       conversion({
-         html: html,
-         allowLocalFilesAccess: true,
-         phantomPath: require("phantomjs-prebuilt").path,
-         settings: {
-              javascriptEnabled : true,
-              resourceTimeout: 10000
-          },
-          paperSize: {
-              format: 'A4',
-              orientation: 'portrait',
-              margin: {
-                  top: "0.33in",
-                  left: "0in",
-                  right:"0.19in"
-              }
-          }
-       }, function(err, pdf) {
-       var output = fs.createWriteStream('./generated.pdf')
-       //console.log(pdf.logs);
-       //console.log(pdf.numberOfPages);
-         // since pdf.stream is a node.js stream you can use it
-         // to save the pdf to a file (like in this example) or to
-         // respond an http request.
-       pdf.stream.pipe(output);
-       conversion.kill();
-       });
-
-
-
-    });
-  });
+let accounts = JSON.parse(fs.readFileSync("./accounts.json").toString())
+generate(accounts);

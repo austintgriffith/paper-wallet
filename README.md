@@ -4,20 +4,38 @@ Paper wallets to seed the [Burner Wallet](https://github.com/austintgriffith/bur
 ![paperwallets](https://user-images.githubusercontent.com/2653167/51704894-6c7be780-1fd7-11e9-8bf9-09d9a55f6943.jpg)
 
 # install
-```javascript
+```bash
 git clone https://github.com/austintgriffith/paper-wallet
 cd paper-wallet
 npm i
 ```
 
-# run
-```javascript
+# generate accounts
+```bash
+node generate.js
+```
+(This will output an `accounts.json` file with the JSON format `[{address,pk}])`
+
+# edit design and copy
+edit `template.html` to make changes and replace `front.png`, `back.png`, `inside-left.png`, and `inside-right.png` to update images
+
+you can also set a global background with the `background.png` and a quick edit to `template.html`
+
+# create wallets from accounts
+```bash
 node index.js
 ```
 
-This will generate a file called `generated.html` that can be printed.
+(this will output `wallets.pdf`)
 
-You could also just print out `private.svg` if you are in a pinch.
+# print wallets
+```bash
+lp wallets.pdf
+```
+
+-------------------------
+
+You can print out `private.svg` if you are in a pinch.
 
 If you would like me to generate you a special wallet design `cspaperwallet.jpg` hit me up on Twitter or Telegram @austingriffith
 
@@ -44,7 +62,7 @@ Finally... print, fold, cut, and glue your way to freedom!
 
 # air dropping
 
-You will need a distribution account. I would suggest using a mnemonic you can remember in the Burner Wallet and then copy the private key the wallet generates. 
+You will need a distribution account. I would suggest using a mnemonic you can remember in the Burner Wallet and then copy the private key the wallet generates.
 
 You will then pass this private key into the airdrop script within the command you run it with or in a `.env` file:
 
@@ -52,7 +70,7 @@ You will then pass this private key into the airdrop script within the command y
 echo "SENDING_PK=0xdeadbeef" > .env
 ```
 
-If this account has the necessary funds, it will drop whatever you specify in the `AMOUNT_OF_BURN_TO_SEND` and `AMOUNT_OF_XDAI_TO_SEND` to all `accounts` listed in your `addresses.txt` file:
+If this account has the necessary funds on the network `provider`, it will drop whatever you specify in the `AMOUNT_OF_ERC20_TO_SEND` and `AMOUNT_OF_NATIVE_TOKEN_TO_SEND` to all `accounts.json`:
 ```
 node airdrop.js
 ```
@@ -60,6 +78,3 @@ node airdrop.js
 Use the CONFIG options like `justChecking`, `dryRun`, `testRun` for more control and testing.
 
 ![walletcutting](https://user-images.githubusercontent.com/2653167/51705234-4440b880-1fd8-11e9-93ed-93338376cfdc.jpg)
-
-
-

@@ -12,33 +12,34 @@ const fs = require("fs")
 const CONFIG = {
   justChecking: false, //True if you only want to check balances of all accounts
   dryRun: false, //Tells you what it would do without actually sending any txs
-  testRun: true, //Sends small dust amounts instead of the real airdrop amount
-  provider: 'https://dai.poa.network',
-  erc20ContractAddr: '0x0D9Ab7eD8A4905E319De8fFa9eA5225f9F25BF0A', //Contract addr for the ERC20 token
+  testRun: false, //Sends small dust amounts instead of the real airdrop amount
+  provider: "http://0.0.0.0:8545",//'https://dai.poa.network',
+  erc20ContractAddr: '0xD5095AAd6aC04C44dd69845AC26a88Fb96b4CE0A', //Contract addr for the ERC20 token
   erc20Abi: require('./contracts/Burner.abi'),
   sendingPk: process.env.SENDING_PK,
   sendingAccount: "0x"+ethereumjsutil.privateToAddress(process.env.SENDING_PK).toString('hex'),
   erc20SendGas: 75034,
   xDaiSendGas: 21000,
-  gasPrice: toWei('5', 'gwei'),
+  gasPrice: toWei('1.1', 'gwei'),
 }
 
-//use this to debug CONFIG
-// console.log(CONFIG)
-// process.exit(1)
 
 const web3 = new Web3(new Web3.providers.HttpProvider(CONFIG.provider));
 let ERC20 = new web3.eth.Contract(CONFIG.erc20Abi, CONFIG.erc20ContractAddr);
 
-const AMOUNT_OF_BURN_TO_SEND = CONFIG.testRun ? toWei('1', 'wei') : toWei('1', 'ether')
-const AMOUNT_OF_XDAI_TO_SEND = CONFIG.testRun ? toWei('1', 'wei') : toWei('0.10', 'ether')
+const AMOUNT_OF_ERC20_TO_SEND = CONFIG.testRun ? toWei('1', 'wei') : toWei('5', 'ether')
+const AMOUNT_OF_NATIVE_TOKEN_TO_SEND = CONFIG.testRun ? toWei('1', 'wei') : toWei('0.02', 'ether')
 
 //Batch related settings
 const TXS_PER_BATCH = 6
-const SLEEP_TIME = 5000
+const SLEEP_TIME = 10000
 
 function main() {
-  let accounts = fs.readFileSync("./addresses.txt").toString().trim().split("\n")
+  let accounts = []
+  let accountsJson = JSON.parse(fs.readFileSync("./accounts.json").toString())
+  for(let a in accountsJson){
+    accounts[a] = accountsJson[a].address
+  }
 
   checkBalances(accounts)
   if(!CONFIG.justChecking) airDrop(accounts)
@@ -70,8 +71,8 @@ async function airDrop(accounts) {
 
     let batch = []
     for(let i = 0; i < accounts.length; i++) {
-      console.log('AMOUNT_OF_BURN_TO_SEND: ', AMOUNT_OF_BURN_TO_SEND);
-      console.log('AMOUNT_OF_XDAI_TO_SEND: ', AMOUNT_OF_XDAI_TO_SEND);
+      console.log('AMOUNT_OF_ERC20_TO_SEND: ', AMOUNT_OF_ERC20_TO_SEND);
+      console.log('AMOUNT_OF_NATIVE_TOKEN_TO_SEND: ', AMOUNT_OF_NATIVE_TOKEN_TO_SEND);
 
       let tx = sendErc20(accounts[i], nonce++)
       batch = await addToBatch(batch, tx)
@@ -108,8 +109,8 @@ function expectedGasCosts() {
 }
 
 async function senderHasFunds(numAccounts) {
-  let requiredXDai = (new BN(AMOUNT_OF_XDAI_TO_SEND).add(expectedGasCosts())) * numAccounts;
-  let requiredBurn = new BN(AMOUNT_OF_BURN_TO_SEND) * numAccounts;
+  let requiredXDai = (new BN(AMOUNT_OF_NATIVE_TOKEN_TO_SEND).add(expectedGasCosts())) * numAccounts;
+  let requiredBurn = new BN(AMOUNT_OF_ERC20_TO_SEND) * numAccounts;
 
   console.log('requiredXDai: ', requiredXDai);
   console.log('requiredBurn: ', requiredBurn);
@@ -118,7 +119,7 @@ async function senderHasFunds(numAccounts) {
   let balance = await web3.eth.getBalance(CONFIG.sendingAccount)
 
   console.log('erc20Balance: ', erc20Balance);
-  console.log('balance: ', balance);
+  console.log('nativeBalance: ', balance);
 
   return (balance >= requiredXDai && erc20Balance >= requiredBurn);
 }
@@ -134,8 +135,8 @@ async function checkBalances(accounts) {
     // if(fromWei(erc20Balance, 'ether') !== '10' || fromWei(balance, 'ether') !== '0.01') {
     if(true) {
       console.log(`${accounts[i]}:`)
-      console.log(`  BURN: ${fromWei(erc20Balance, 'ether')}`)
-      console.log(`  xDai: ${fromWei(balance, 'ether')}`)
+      console.log(`  erc20Balance: ${fromWei(erc20Balance, 'ether')}`)
+      console.log(`  nativeBalance: ${fromWei(balance, 'ether')}`)
     }
   }
 }
@@ -147,7 +148,7 @@ function checkErc20Balance(account) {
 async function sendXDai(to, nonce) {
   let tx = {
     to: to,
-    value: AMOUNT_OF_XDAI_TO_SEND,
+    value: AMOUNT_OF_NATIVE_TOKEN_TO_SEND,
     gas: CONFIG.xDaiSendGas,
     gasPrice: CONFIG.gasPrice,
     nonce: nonce
@@ -162,7 +163,7 @@ async function sendXDai(to, nonce) {
 }
 
 async function sendErc20(to, nonce) {
-  let data = ERC20.methods.transfer(to, AMOUNT_OF_BURN_TO_SEND).encodeABI()
+  let data = ERC20.methods.transfer(to, AMOUNT_OF_ERC20_TO_SEND).encodeABI()
 
   let tx = {
     to: CONFIG.erc20ContractAddr,
