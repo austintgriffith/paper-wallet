@@ -4,11 +4,13 @@ var merge = require('easy-pdf-merge');
 var fs = require('fs')
 let sources = []
 
+const URL = "http://10.0.0.107:3000/"
+
 async function generate(accounts){
   let account
   for(let a in accounts){
     account = accounts[a]
-    const { stdout, stderr } = await exec('node create.js '+account.address+" "+account.pk);
+    const { stdout, stderr } = await exec('node create.js '+account.address+" "+account.pk+" "+URL);
     if (stderr) {
       console.error(`error: ${stderr}`);
     }

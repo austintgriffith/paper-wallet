@@ -4,12 +4,11 @@ let base64url = require('base64url')
 let fs = require("fs")
 var web3 = new Web3()
 
-const URL = "https://daog.io"
 const COMPRESS = true
-
 
 var publicAddress = process.argv[2]
 let PK = process.argv[3]
+let URL = process.argv[4]
 
 let pkLink
 if(COMPRESS){
