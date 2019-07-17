@@ -10,11 +10,11 @@ const ethereumjsutil = require("ethereumjs-util")
 const fs = require("fs")
 
 const CONFIG = {
-  justChecking: false, //True if you only want to check balances of all accounts
+  justChecking: true, //True if you only want to check balances of all accounts
   dryRun: false, //Tells you what it would do without actually sending any txs
   testRun: false, //Sends small dust amounts instead of the real airdrop amount
   provider: "http://0.0.0.0:8545",//'https://dai.poa.network',
-  erc20ContractAddr: '0xD5095AAd6aC04C44dd69845AC26a88Fb96b4CE0A', //Contract addr for the ERC20 token
+  erc20ContractAddr: fs.readFileSync("../sandbox/contracts/StableCoin/StableCoin.address").toString(), //Contract addr for the ERC20 token
   erc20Abi: require('./contracts/Burner.abi'),
   sendingPk: process.env.SENDING_PK,
   sendingAccount: "0x"+ethereumjsutil.privateToAddress(process.env.SENDING_PK).toString('hex'),
@@ -109,11 +109,11 @@ function expectedGasCosts() {
 }
 
 async function senderHasFunds(numAccounts) {
-  let requiredXDai = (new BN(AMOUNT_OF_NATIVE_TOKEN_TO_SEND).add(expectedGasCosts())) * numAccounts;
-  let requiredBurn = new BN(AMOUNT_OF_ERC20_TO_SEND) * numAccounts;
+  let requiredNative = (new BN(AMOUNT_OF_NATIVE_TOKEN_TO_SEND).add(expectedGasCosts())) * numAccounts;
+  let requiredToken = new BN(AMOUNT_OF_ERC20_TO_SEND) * numAccounts;
 
-  console.log('requiredXDai: ', requiredXDai);
-  console.log('requiredBurn: ', requiredBurn);
+  console.log('requiredNative: ', requiredNative);
+  console.log('requiredToken: ', requiredToken);
 
   let erc20Balance = await checkErc20Balance(CONFIG.sendingAccount);
   let balance = await web3.eth.getBalance(CONFIG.sendingAccount)
@@ -121,7 +121,7 @@ async function senderHasFunds(numAccounts) {
   console.log('erc20Balance: ', erc20Balance);
   console.log('nativeBalance: ', balance);
 
-  return (balance >= requiredXDai && erc20Balance >= requiredBurn);
+  return (balance >= requiredNative && erc20Balance >= requiredToken);
 }
 
 async function checkBalances(accounts) {

@@ -4,7 +4,8 @@ const MINEFOR = "da06"
 var web3 = new Web3()
 
 
-const AMOUNT = 5
+let AMOUNT = process.argv[2]
+if(!AMOUNT) AMOUNT=1
 
 let accounts
 
