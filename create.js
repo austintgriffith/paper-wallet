@@ -37,6 +37,8 @@ fs.readFile("template.html", 'utf8', (err,data) => {
   result = result.replace(/\*\*URL\*\*/g,URL);
   result = result.replace(/"\.\//g, "\"file://"+__dirname+"/");
 
+  console.log(result)
+
   fs.writeFile("generated.html", result, 'utf8', function (err) {
      if (err) return console.log(err);
 
