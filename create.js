@@ -34,7 +34,7 @@ fs.readFile("template.html", 'utf8', (err,data) => {
     return console.log(err);
   }
   var result = data.replace(/\*\*PUBLIC\*\*/g, publicAddress.substring(0,9)+"......"+publicAddress.substring(publicAddress.length-8));
-
+  result = result.replace(/\*\*URL\*\*/g,URL);
   result = result.replace(/"\.\//g, "\"file://"+__dirname+"/");
 
   fs.writeFile("generated.html", result, 'utf8', function (err) {
