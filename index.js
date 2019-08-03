@@ -4,7 +4,7 @@ var merge = require('easy-pdf-merge');
 var fs = require('fs')
 let sources = []
 
-const URL = "https://daog.io"
+let URL = process.argv[2]
 
 async function generate(accounts){
   let account

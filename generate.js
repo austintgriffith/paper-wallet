@@ -1,6 +1,6 @@
 var Web3 = require('web3')
 var fs = require('fs')
-const MINEFOR = "da06"
+const MINEFOR = false//"da06"
 var web3 = new Web3()
 
 
