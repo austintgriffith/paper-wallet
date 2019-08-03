@@ -13,14 +13,14 @@ const CONFIG = {
   justChecking: true, //True if you only want to check balances of all accounts
   dryRun: false, //Tells you what it would do without actually sending any txs
   testRun: false, //Sends small dust amounts instead of the real airdrop amount
-  provider: "http://0.0.0.0:8545",//'https://dai.poa.network',
-  erc20ContractAddr: fs.readFileSync("../sandbox/contracts/StableCoin/StableCoin.address").toString(), //Contract addr for the ERC20 token
+  provider: 'https://dai.poa.network',//"http://0.0.0.0:8545",//
+  erc20ContractAddr: "0x983281a2B8076D4B51Df0971F654B6De9aD1Ae61",//fs.readFileSync("../sandbox/contracts/StableCoin/StableCoin.address").toString(), //Contract addr for the ERC20 token
   erc20Abi: require('./contracts/Burner.abi'),
   sendingPk: process.env.SENDING_PK,
   sendingAccount: "0x"+ethereumjsutil.privateToAddress(process.env.SENDING_PK).toString('hex'),
   erc20SendGas: 75034,
   xDaiSendGas: 21000,
-  gasPrice: toWei('1.1', 'gwei'),
+  gasPrice: toWei('5', 'gwei'),
 }
 
 
@@ -28,7 +28,7 @@ const web3 = new Web3(new Web3.providers.HttpProvider(CONFIG.provider));
 let ERC20 = new web3.eth.Contract(CONFIG.erc20Abi, CONFIG.erc20ContractAddr);
 
 const AMOUNT_OF_ERC20_TO_SEND = CONFIG.testRun ? toWei('1', 'wei') : toWei('5', 'ether')
-const AMOUNT_OF_NATIVE_TOKEN_TO_SEND = CONFIG.testRun ? toWei('1', 'wei') : toWei('0.02', 'ether')
+const AMOUNT_OF_NATIVE_TOKEN_TO_SEND = CONFIG.testRun ? toWei('1', 'wei') : toWei('0.25', 'ether')
 
 //Batch related settings
 const TXS_PER_BATCH = 6
@@ -120,6 +120,15 @@ async function senderHasFunds(numAccounts) {
 
   console.log('erc20Balance: ', erc20Balance);
   console.log('nativeBalance: ', balance);
+
+  let neededNative  = balance-requiredNative;
+  if(neededNative<0){
+    console.log("!! Native Token Needed:",neededNative/10**18*-1,"(send to "+CONFIG.sendingAccount+")")
+  }
+  let neededERC20  = erc20Balance-requiredToken;
+  if(neededERC20<0){
+    console.log("!! ERC20 Token Needed:",neededERC20/10**18*-1,"(send to "+CONFIG.sendingAccount+")")
+  }
 
   return (balance >= requiredNative && erc20Balance >= requiredToken);
 }
