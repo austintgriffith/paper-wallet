@@ -12,10 +12,11 @@ const fs = require("fs")
 
 const CONFIG = {
   justChecking: true, //True if you only want to check balances of all accounts
-  dryRun: true, //Tells you what it would do without actually sending any txs
+  dryRun: false, //Tells you what it would do without actually sending any txs
   testRun: false, //Sends small dust amounts instead of the real airdrop amount
-  provider: 'https://dai.poa.network',
-  erc20ContractAddr: '0xa95d505e6933cb790ed3431805871efe4e6bbafd', //Contract addr for the ERC20 token
+  provider: 'http://10.0.0.188:8555',
+  //erc20ContractAddr: '0xa95d505e6933cb790ed3431805871efe4e6bbafd', //Contract addr for the ERC20 token
+  erc20ContractAddr: '0x0D9Ab7eD8A4905E319De8fFa9eA5225f9F25BF0A',//emojicoin.exchange
   erc20Abi: require('./contracts/Burner.abi'),
   sendingPk: process.env.SENDING_PK,
   sendingAccount: "0x"+ethereumjsutil.privateToAddress(process.env.SENDING_PK).toString('hex'),
@@ -31,8 +32,8 @@ const CONFIG = {
 const web3 = new Web3(new Web3.providers.HttpProvider(CONFIG.provider));
 let ERC20 = new web3.eth.Contract(CONFIG.erc20Abi, CONFIG.erc20ContractAddr);
 
-const AMOUNT_OF_BURN_TO_SEND = CONFIG.testRun ? toWei('1', 'wei') : toWei('9.09', 'ether')
-const AMOUNT_OF_XDAI_TO_SEND = CONFIG.testRun ? toWei('1', 'wei') : toWei('0.02', 'ether')
+const AMOUNT_OF_BURN_TO_SEND = CONFIG.testRun ? toWei('1', 'wei') : toWei('0.00', 'ether')
+const AMOUNT_OF_XDAI_TO_SEND = CONFIG.testRun ? toWei('1', 'wei') : toWei('0.009', 'ether')
 
 function main() {
   let accounts = fs.readFileSync("./addresses.txt").toString().trim().split("\n")
@@ -67,13 +68,13 @@ async function airDrop(accounts) {
     console.log('Nonce: ', nonce);
 
     for(let i = 0; i < accounts.length; i++) {
-      console.log('AMOUNT_OF_BURN_TO_SEND: ', AMOUNT_OF_BURN_TO_SEND);
+      //console.log('AMOUNT_OF_BURN_TO_SEND: ', AMOUNT_OF_BURN_TO_SEND);
       console.log('AMOUNT_OF_XDAI_TO_SEND: ', AMOUNT_OF_XDAI_TO_SEND);
       setTimeout(()=>{
         sendXDai(accounts[i], nonce++);
       },500)
       setTimeout(()=>{
-        sendErc20(accounts[i], nonce++);
+      //  sendErc20(accounts[i], nonce++);
       },750)
     }
   })
@@ -109,9 +110,11 @@ async function checkBalances(accounts) {
     //Enable this line if you only want to show those who don't have the correct amount air dropped on them.
     // if(fromWei(erc20Balance, 'ether') !== '10' || fromWei(balance, 'ether') !== '0.01') {
     if(true) {
-      console.log(`${accounts[i]}:`)
-      console.log(`  BURN: ${fromWei(erc20Balance, 'ether')}`)
-      console.log(`  xDai: ${fromWei(balance, 'ether')}`)
+      if(/*fromWei(erc20Balance, 'ether')!=4 || */parseFloat(fromWei(balance, 'ether'))<0.05){
+        console.log(`${accounts[i]}:`)
+        console.log(`  TOKEN : ${fromWei(erc20Balance, 'ether')}`)
+        console.log(`  xDai: ${fromWei(balance, 'ether')}`)
+      }
     }
   }
 }
@@ -146,6 +149,24 @@ function sendErc20(to, nonce) {
     gas: CONFIG.erc20SendGas,
     gasPrice: CONFIG.gasPrice,
     data: data,
+    nonce: nonce
+  }
+
+  if(CONFIG.dryRun === false) {
+    web3.eth.accounts.signTransaction(tx, CONFIG.sendingPk).then(signed => {
+        web3.eth.sendSignedTransaction(signed.rawTransaction).on('receipt', console.log);
+    });
+  } else {
+    console.log("Dry run enabled. Would have sent tx: ", tx)
+  }
+}
+
+function sendXDai(to, nonce) {
+  let tx = {
+    to: to,
+    value: AMOUNT_OF_XDAI_TO_SEND,
+    gas: CONFIG.xDaiSendGas,
+    gasPrice: CONFIG.gasPrice,
     nonce: nonce
   }
 

@@ -1,3 +1,4 @@
+private*
 *.pdf
 private.png
 .env
